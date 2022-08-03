@@ -58,7 +58,7 @@ describe("Validate Request Message", () => {
   test("one constract", async () => {
     const message = `: ท่านกำลังยืนยันตัวตนและลงนามสัญญาด้วยลายมือชื่ออิเล็กทรอนิกส์ [ธนาคาร B จำกัด (มหาชน)] ที่ท่านเลือก (Ref:477701) สามารถอ่านสัญญาได้ที่
 http://localhost:3010/file/26ac627c6f6094bfa7e19f970d9a53b0d881c663f577b3128abbc758357f01de`;
-    const result = await checkContractHash(message);
+    const result = await checkContractHash(message, { logger: defaultLogger });
     expect(result).toBe(true);
   });
 
@@ -68,7 +68,7 @@ http://localhost:3010/file/26ac627c6f6094bfa7e19f970d9a53b0d881c663f577b3128abbc
 http://localhost:3010/file/91dfaf06e775e56cab617dad70bea5076bdc044b828820d760d9f32d37ccf283
 http://localhost:3010/file/c06b69615a2bdaa1a0d486a4634ba5400275d25290deb6681bed29def7e5cc48
   `;
-    const result = await checkContractHash(message);
+    const result = await checkContractHash(message, { logger: defaultLogger });
     expect(result).toBe(true);
   });
 
@@ -89,7 +89,6 @@ http://localhost:3010/file/26ac627c6f6094bfa7e19f970d9a53b0d881c663f577b3128abbc
   test("Invalid format request message", async () => {
     const message = "ยินดีด้วยคะ เงินเดือนของคุณ 20,000 บาท เข้าบัญชียูสเซอร์ของคุณแล้วเสร็จงานภารกิจถอนเงินสดเข้าบัญชีได้ทันที กรุณากดที่ http://tinyurl/xxxx";
     const result = await checkContractHash(message);
-    // console.log(result)
     expect(result).toBe(false);
   });
 
@@ -100,10 +99,16 @@ http://localhost23:3010/file/26ac627c6f6094bfa7e19f970d9a53b0d881c663f577b3128ab
     expect(result).toBe(false);
   });
 
-  test("Host timeout", async () => {
+  test("Host reject", async () => {
     const message = `: ท่านกำลังยืนยันตัวตนและลงนามสัญญาด้วยลายมือชื่ออิเล็กทรอนิกส์ [ธนาคาร B จำกัด (มหาชน)] ที่ท่านเลือก (Ref:477701) สามารถอ่านสัญญาได้ที่
 http://localhost:3011/file/26ac627c6f6094bfa7e19f970d9a53b0d881c663f577b3128abbc758357f01ff`;
     const result = await checkContractHash(message, { logger: defaultLogger });
+    expect(result).toBe(false);
+  });
+  test("Host timeout", async () => {
+    const message = `: ท่านกำลังยืนยันตัวตนและลงนามสัญญาด้วยลายมือชื่ออิเล็กทรอนิกส์ [ธนาคาร B จำกัด (มหาชน)] ที่ท่านเลือก (Ref:477701) สามารถอ่านสัญญาได้ที่
+http://10.255.255.1:5000/file/26ac627c6f6094bfa7e19f970d9a53b0d881c663f577b3128abbc758357f01ff`;
+    const result = await checkContractHash(message, { logger: defaultLogger, timeout: 2000 });
     expect(result).toBe(false);
   });
 });

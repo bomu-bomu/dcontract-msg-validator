@@ -1,6 +1,8 @@
 const fetch = require("node-fetch");
 const crypto = require("crypto");
 
+const { AbortController } = globalThis;
+
 /**
  * Get SHA256 Hash from data
  * @param {buffer} dataToHash
@@ -37,6 +39,7 @@ function extractURLFromRequestMessage(requestMessage) {
  */
 async function checkContractHash(requestMessage, opt = {}) {
   const { logger } = opt;
+  const timeoutTime = opt.timeout || 15000;
   /**
    * Validate individual url and hash data
    * @param {} url
@@ -44,18 +47,34 @@ async function checkContractHash(requestMessage, opt = {}) {
    */
   async function validateUrl(url) {
     const uri = new URL(url);
-    const response = await fetch(uri);
-    if (response?.status !== 200) {
-      logger?.error(`Fetch url ${uri.href}: ${response?.statusText}`);
-      return false;
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => {
+      controller.abort();
+    }, timeoutTime);
+
+    try {
+      const response = await fetch(uri, { signal: controller.signal });
+
+      if (response?.status !== 200) {
+        throw new Error(`request to ${uri.href} failed: ${response?.statusText}`);
+      }
+      const urlSplit = url.split("/");
+      const urlHash = urlSplit[urlSplit.length - 1];
+      const content = await response.buffer();
+
+      const contentHash = sha256(content).toString("hex");
+
+      return contentHash === urlHash;
+    } catch (err) {
+      if (err.name === "AbortError") {
+        throw new Error(`request to ${url} failed: Timeout after ${timeoutTime}ms`);
+      } else {
+        throw err;
+      }
+    } finally {
+      clearTimeout(timeout);
     }
-    const urlSplit = url.split("/");
-    const urlHash = urlSplit[urlSplit.length - 1];
-    const content = await response.buffer();
-
-    const contentHash = sha256(content).toString("hex");
-
-    return contentHash === urlHash;
   }
 
   try {
