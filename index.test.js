@@ -1,5 +1,7 @@
 const { extractURLFromRequestMessage, checkContractHash } = require("./index");
 
+const defaultLogger = console;
+
 describe("Request Message Extraction", () => {
   test("single value", () => {
     const message = `: ท่านกำลังยืนยันตัวตนและลงนามสัญญาด้วยลายมือชื่ออิเล็กทรอนิกส์ [ธนาคาร B จำกัด (มหาชน)] ที่ท่านเลือก (Ref:477701) สามารถอ่านสัญญาได้ที่
@@ -73,7 +75,7 @@ http://localhost:3010/file/c06b69615a2bdaa1a0d486a4634ba5400275d25290deb6681bed2
   test("URL Not found", async () => {
     const message = `: ท่านกำลังยืนยันตัวตนและลงนามสัญญาด้วยลายมือชื่ออิเล็กทรอนิกส์ [ธนาคาร B จำกัด (มหาชน)] ที่ท่านเลือก (Ref:477701) สามารถอ่านสัญญาได้ที่
 http://localhost:3010/file/26ac627c6f6094bfa7e19f97`;
-    const result = await checkContractHash(message);
+    const result = await checkContractHash(message, { logger: defaultLogger });
     expect(result).toBe(false);
   });
 
@@ -94,14 +96,14 @@ http://localhost:3010/file/26ac627c6f6094bfa7e19f970d9a53b0d881c663f577b3128abbc
   test("Host not found", async () => {
     const message = `: ท่านกำลังยืนยันตัวตนและลงนามสัญญาด้วยลายมือชื่ออิเล็กทรอนิกส์ [ธนาคาร B จำกัด (มหาชน)] ที่ท่านเลือก (Ref:477701) สามารถอ่านสัญญาได้ที่
 http://localhost23:3010/file/26ac627c6f6094bfa7e19f970d9a53b0d881c663f577b3128abbc758357f01ff`;
-    const result = await checkContractHash(message);
+    const result = await checkContractHash(message, { logger: defaultLogger });
     expect(result).toBe(false);
   });
 
   test("Host timeout", async () => {
     const message = `: ท่านกำลังยืนยันตัวตนและลงนามสัญญาด้วยลายมือชื่ออิเล็กทรอนิกส์ [ธนาคาร B จำกัด (มหาชน)] ที่ท่านเลือก (Ref:477701) สามารถอ่านสัญญาได้ที่
 http://localhost:3011/file/26ac627c6f6094bfa7e19f970d9a53b0d881c663f577b3128abbc758357f01ff`;
-    const result = await checkContractHash(message);
+    const result = await checkContractHash(message, { logger: defaultLogger });
     expect(result).toBe(false);
   });
 });

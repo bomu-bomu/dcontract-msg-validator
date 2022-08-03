@@ -35,7 +35,8 @@ function extractURLFromRequestMessage(requestMessage) {
  * @param {string} requestMessage NDID request message
  * @returns {boolean} validation result <true/false>
  */
-async function checkContractHash(requestMessage) {
+async function checkContractHash(requestMessage, opt = {}) {
+  const { logger } = opt;
   /**
    * Validate individual url and hash data
    * @param {} url
@@ -45,6 +46,7 @@ async function checkContractHash(requestMessage) {
     const uri = new URL(url);
     const response = await fetch(uri);
     if (response?.status !== 200) {
+      logger?.error(`Fetch url ${uri.href}: ${response?.statusText}`);
       return false;
     }
     const urlSplit = url.split("/");
@@ -72,7 +74,7 @@ async function checkContractHash(requestMessage) {
     // 3. pass if all data is pass
     return results.every((result) => result === true);
   } catch (err) {
-    console.error(err);
+    logger?.error(err.message);
     return false;
   }
 }
