@@ -1,0 +1,9 @@
+{
+  "port": 3010,
+  "endpoints": [
+    {
+      "path": "/file",
+      "folder": "./files"
+    }
+  ]
+}
