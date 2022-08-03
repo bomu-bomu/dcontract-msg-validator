@@ -4,7 +4,7 @@ const crypto = require("crypto");
 /**
  * Get SHA256 Hash from data
  * @param {buffer} dataToHash
- * @returns 
+ * @returns {buffer}
  */
 function sha256(dataToHash) {
   const hash = crypto.createHash("sha256");
@@ -66,11 +66,7 @@ async function checkContractHash(requestMessage) {
     }
 
     // 2. Do url validation concurrently
-    const validators = [];
-    for (const url of urls) {
-      console.log(url);
-      validators.push(validateUrl(url));
-    }
+    const validators = urls.map((url) => validateUrl(url));
     const results = await Promise.all(validators);
 
     // 3. pass if all data is pass
@@ -80,6 +76,5 @@ async function checkContractHash(requestMessage) {
     return false;
   }
 }
-
 
 module.exports = { extractURLFromRequestMessage, checkContractHash };
